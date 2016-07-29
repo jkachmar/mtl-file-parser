@@ -35,14 +35,20 @@ main :: IO ()
 main = runProgram =<< parseCLI
 
 runProgram :: Options -> IO ()
-runProgram opts =
-  either _ return =<< runExceptT (runReaderT (runApp app) opts)
+runProgram opts = do
+  app' <- (runExceptT . flip runReaderT opts . runApp) app
+  either renderError return app'
 
 app :: App ()
 app = liftIO . putStr
   =<< handleExcitedness
   =<< handleCapitalization
   =<< getSource
+
+renderError :: AppError -> IO ()
+renderError (IOError e) = do
+  putStrLn "There was an error:"
+  putStrLn $ "  " ++ show e
 
 -- data retrieval and transformation
 
