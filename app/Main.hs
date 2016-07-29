@@ -42,7 +42,7 @@ runProgram = _
 getSource :: App String
 getSource = do
   inputSrc <- asks oStdIn
-  B.bool _ (liftIO getContents) inputSrc
+  B.bool loadContents (liftIO getContents) inputSrc
 
 handleCapitalization :: AppConfig m => String -> m String
 handleCapitalization str = B.bool str (map C.toUpper str) <$> asks oCapitalize
@@ -50,12 +50,12 @@ handleCapitalization str = B.bool str (map C.toUpper str) <$> asks oCapitalize
 handleExcitedness :: AppConfig m => String -> m String
 handleExcitedness str = B.bool str ("ZOMG " ++ str) <$> asks oExcited
 
-loadContents :: Options -> IO (Either String String)
-loadContents o =
-    maybe defaultResponse readFileFromOptions $ oFileToRead o
+loadContents :: App String
+loadContents =
+    maybe defaultResponse readFileFromOptions =<< asks oFileToRead
   where
-    readFileFromOptions f = BF.first show <$> safeReadFile f
-    defaultResponse = return $ Right "This is fun!"
+    readFileFromOptions f = either throwError return =<< BF.first IOError <$> liftIO (safeReadFile f)
+    defaultResponse = return "This is fun!"
 
 -- CLI parsing
 
