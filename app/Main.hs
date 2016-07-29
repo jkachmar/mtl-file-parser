@@ -35,7 +35,14 @@ main :: IO ()
 main = runProgram =<< parseCLI
 
 runProgram :: Options -> IO ()
-runProgram = _
+runProgram opts =
+  either _ return =<< runExceptT (runReaderT (runApp app) opts)
+
+app :: App ()
+app = liftIO . putStr
+  =<< handleExcitedness
+  =<< handleCapitalization
+  =<< getSource
 
 -- data retrieval and transformation
 
