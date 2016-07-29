@@ -40,7 +40,9 @@ runProgram = _
 -- data retrieval and transformation
 
 getSource :: App String
-getSource = B.bool _ (liftIO getContents) =<< asks oStdIn
+getSource = do
+  inputSrc <- asks oStdIn
+  B.bool _ (liftIO getContents) inputSrc
 
 handleCapitalization :: AppConfig m => String -> m String
 handleCapitalization str = B.bool str (map C.toUpper str) <$> asks oCapitalize
