@@ -57,7 +57,7 @@ loadContents = do
   where
     readFileFromOptions :: String -> App String
     readFileFromOptions fileToRead = do
-      fileContents <- BF.first IOError <$> liftIO (safeReadFile fileToRead)
+      fileContents <- liftIO $ safeReadFile fileToRead
       either throwError return fileContents
 
     defaultResponse :: App String
@@ -77,5 +77,7 @@ parseOptions = Options
     <*> switch (long "stdin")
     <*> optional (strOption $ long "file")
 
-safeReadFile :: FilePath -> IO (Either E.IOException String)
-safeReadFile = E.try . readFile
+safeReadFile :: FilePath -> IO (Either AppError String)
+safeReadFile filePath = do
+  let file = (E.try . readFile) filePath
+  BF.first IOError <$> file
