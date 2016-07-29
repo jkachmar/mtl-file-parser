@@ -76,6 +76,11 @@ loadContents = do
     defaultResponse :: App String
     defaultResponse = return "This is fun!"
 
+safeReadFile :: FilePath -> IO (Either AppError String)
+safeReadFile filePath = do
+  let file = (E.try . readFile) filePath
+  BF.first IOError <$> file
+
 -- CLI parsing
 
 parseCLI :: IO Options
@@ -89,8 +94,3 @@ parseOptions = Options
     <*> switch (long "excited")
     <*> switch (long "stdin")
     <*> optional (strOption $ long "file")
-
-safeReadFile :: FilePath -> IO (Either AppError String)
-safeReadFile filePath = do
-  let file = (E.try . readFile) filePath
-  BF.first IOError <$> file
