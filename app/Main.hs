@@ -51,10 +51,16 @@ handleExcitedness :: AppConfig m => String -> m String
 handleExcitedness str = B.bool str ("ZOMG " ++ str) <$> asks oExcited
 
 loadContents :: App String
-loadContents =
-    maybe defaultResponse readFileFromOptions =<< asks oFileToRead
+loadContents = do
+  fileName <- asks oFileToRead
+  maybe defaultResponse readFileFromOptions fileName
   where
-    readFileFromOptions f = either throwError return =<< BF.first IOError <$> liftIO (safeReadFile f)
+    readFileFromOptions :: String -> App String
+    readFileFromOptions fileToRead = do
+      fileContents <- BF.first IOError <$> liftIO (safeReadFile fileToRead)
+      either throwError return fileContents
+
+    defaultResponse :: App String
     defaultResponse = return "This is fun!"
 
 -- CLI parsing
