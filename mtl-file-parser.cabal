@@ -20,6 +20,7 @@ executable  file-parser
   hs-source-dirs:      app
   main-is:             Main.hs
   build-depends:       base
+                     , mtl
                      , optparse-applicative
 
 source-repository head

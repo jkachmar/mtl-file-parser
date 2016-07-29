@@ -1,9 +1,13 @@
+{-# LANGUAGE ConstraintKinds  #-}
+{-# LANGUAGE FlexibleContexts #-}
+
 module Main where
 
-import qualified Control.Exception   as E
-import qualified Data.Bifunctor      as BF
-import qualified Data.Bool           as B
-import qualified Data.Char           as C
+import qualified Control.Exception    as E
+import           Control.Monad.Reader
+import qualified Data.Bifunctor       as BF
+import qualified Data.Bool            as B
+import qualified Data.Char            as C
 import           Options.Applicative
 
 -- types
@@ -15,6 +19,8 @@ data Options = Options
     , oFileToRead :: Maybe String
     }
 
+type AppConfig = MonadReader Options
+
 -- program entry point
 
 main :: IO ()
@@ -22,18 +28,18 @@ main = runProgram =<< parseCLI
 
 runProgram :: Options -> IO ()
 runProgram o =
-    putStr =<< (handleExcitedness o . handleCapitalization o <$> getSource o)
+    putStr =<< (_ . _ <$> getSource o)
 
 -- data retrieval and transformation
 
 getSource :: Options -> IO String
 getSource o = B.bool (either id id <$> loadContents o) getContents $ oStdIn o
 
-handleCapitalization :: Options -> String -> String
-handleCapitalization o = B.bool id (map C.toUpper) $ oCapitalize o
+handleCapitalization :: AppConfig m => String -> m String
+handleCapitalization str = B.bool str (map C.toUpper str) <$> asks oCapitalize
 
-handleExcitedness :: Options -> String -> String
-handleExcitedness o = B.bool id ("ZOMG " ++) $ oExcited o
+handleExcitedness :: AppConfig m => String -> m String
+handleExcitedness str = B.bool str ("ZOMG " ++ str) <$> asks oExcited
 
 loadContents :: Options -> IO (Either String String)
 loadContents o =
