@@ -40,10 +40,10 @@ runProgram opts = do
   either renderError return app'
 
 app :: App ()
-app = liftIO . putStr
-  =<< handleExcitedness
-  =<< handleCapitalization
-  =<< getSource
+app = getSource
+  >>= handleCapitalization
+  >>= handleExcitedness
+  >>= liftIO . putStr
 
 renderError :: AppError -> IO ()
 renderError (IOError e) = do
